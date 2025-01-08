@@ -26,7 +26,6 @@ import java.util.List;
 public class SecurityConfig {
 
     private final ObjectMapper objectMapper;
-    private final HttpSessionIdResolver httpSessionIdResolver;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
@@ -40,7 +39,7 @@ public class SecurityConfig {
 
         http
                 .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .maximumSessions(1);
 
         http
                 .cors((cors) -> {
@@ -55,7 +54,7 @@ public class SecurityConfig {
                 });
 
         http
-                .addFilterAt(new LoginFilter(objectMapper, httpSessionIdResolver), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(objectMapper), UsernamePasswordAuthenticationFilter.class);
 
 
         return http.build();
@@ -64,6 +63,11 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public HeaderHttpSessionIdResolver headerHttpSessionIdResolver() {
+        return HeaderHttpSessionIdResolver.xAuthToken();
     }
 
 
